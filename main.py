@@ -223,7 +223,7 @@ async def delete_teamspace(team: str, token: str = Header(None)):
                          }, status_code=200)
 
 
-@app.post("/api/report/visualization", response_class=StreamingResponse, tags=["visualizer"])
+@app.post("/api/report/image", response_class=StreamingResponse, tags=["visualizer"])
 async def generate_image(weights: Weights):
     image = imageGenerator.generate(weights)
     image_bytes = io.BytesIO()
