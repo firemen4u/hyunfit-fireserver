@@ -23,7 +23,7 @@ app.add_middleware(
 )
 
 HASH = b'$2y$10$CA0SbcKrSW/vMu.9JN0W0uP5MJpVyz1vD6YbeScJmNhAuQAmjTBQG'
-HOSTNAMES = {"ryulrudaga.com", "localhost", '127.0.0.1'}
+HOSTNAMES = {"ryulrudaga.com", "fs.hyunfit.life", "localhost", '127.0.0.1'}
 IMAGE_EXTENSIONS = {'.jpg', '.jpeg', '.png', '.gif'}
 
 
