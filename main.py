@@ -78,17 +78,21 @@ async def security_middleware(request: Request, call_next):
 async def upload_file(
         team: str,
         file: UploadFile,
-        token: str = Header(None)):
+        token: str = Header(None),
+        overwrite: bool = True):
 
     if (invalid_token(token)):
         return JSONResponse(content="Unauthorized", status_code=401)
 
     file_path = f"files/{team}/{file.filename}"
+    message = "파일을 성공적으로 업로드하였습니다."
     if os.path.isfile(file_path):
-        return JSONResponse(content={
-            "result": "failed",
-            "message": "같은 이름의 파일이 이미 있습니다."
-        }, status_code=406)
+        if not overwrite:
+            return JSONResponse(content={
+                "result": "failed",
+                "message": "같은 이름의 파일이 이미 있습니다, 파일을 덮어씌우려면 overwrite 값을 주세요."
+            }, status_code=406)
+        message = "기존 파일을 성공적으로 덮어씌웠습니다."
 
     create_directory(f"files/{team}")
 
@@ -96,7 +100,7 @@ async def upload_file(
         f.write(file.file.read())
 
     return JSONResponse({"result": "successful",
-                         "message": "파일을 성공적으로 업로드하였습니다.",
+                         "message": message,
                          "filename": file.filename
                          }, status_code=200)
 
