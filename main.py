@@ -78,11 +78,11 @@ async def security_middleware(request: Request, call_next):
 async def upload_file(
         team: str,
         file: UploadFile,
-        token: str = Header(None),
+        # token: str = Header(None),
         overwrite: bool = True):
 
-    if (invalid_token(token)):
-        return JSONResponse(content="Unauthorized", status_code=401)
+    # if (invalid_token(token)):
+    #     return JSONResponse(content="Unauthorized", status_code=401)
 
     file_path = f"files/{team}/{file.filename}"
     message = "파일을 성공적으로 업로드하였습니다."
@@ -102,7 +102,7 @@ async def upload_file(
     return JSONResponse({"result": "successful",
                          "message": message,
                          "filename": file.filename
-                         }, status_code=200)
+                         }, status_code=201)
 
 
 @app.post("/api/{team}/model", tags=["teachable model"])
@@ -110,7 +110,9 @@ async def upload_teachable_model(
         team: str,
         file: UploadFile,
         modelname: Optional[str] = None,
-        token: str = Header(None)):
+        overwrite: bool = True
+        # token: str = Header(None)
+):
     """
     모델 업로드 API. zip 파일 확장자만 가능
 
@@ -120,8 +122,8 @@ async def upload_teachable_model(
     - file (UploadFile): 업로드할 모델 파일
     - token (str, optional): API 토큰.
     """
-    if (invalid_token(token)):
-        return JSONResponse(content="Unauthorized", status_code=401)
+    # if (invalid_token(token)):
+    #     return JSONResponse(content="Unauthorized", status_code=401)
     if not file:
         return JSONResponse(content={
             "result": "failed",
@@ -140,21 +142,26 @@ async def upload_teachable_model(
         modelname = get_filename(file)
     directory = f"files/{team}/{modelname}"
 
+    message = "파일을 성공적으로 업로드하였습니다."
     if os.path.isdir(directory):
-        return JSONResponse(content={
-            "result": "failed",
-            "message": "같은 이름의 폴더가 이미 있습니다.",
-            "filename": f"{directory}"
-        }, status_code=406)
+        if overwrite:
+            message = "기존 파일을 성공적으로 덮어씌웠습니다."
+        else:
+            return JSONResponse(content={
+                "result": "failed",
+                "message": "같은 이름의 폴더가 이미 있습니다.",
+                "filename": f"{directory}"
+            }, status_code=406)
 
     create_directory(directory)
 
     unzip_uploadfile_to(file, directory)
 
     return JSONResponse({"result": "successful",
-                         "message": "파일을 성공적으로 업로드하였습니다.",
-                         "filename": file.filename
-                         }, status_code=200)
+                         "message": message,
+                         "filename": file.filename,
+                         "modelname": modelname
+                         }, status_code=201)
 
 
 @app.get("/api/{team}/model/{modelname}/{filename}", response_class=FileResponse, tags=["teachable model"])
@@ -186,7 +193,9 @@ async def download_file(team: str, filename: str):
 
 
 @app.delete("/api/{team}/model/{modelname}", tags=["teachable model"])
-async def delete_teachable_model(team: str, modelname: str, token: str = Header(None)):
+async def delete_teachable_model(team: str, modelname: str,
+                                 token: str = Header(None)
+                                 ):
     if (invalid_token(token)):
         return JSONResponse(content="Unauthorized", status_code=401)
 
@@ -207,7 +216,8 @@ async def delete_teachable_model(team: str, modelname: str, token: str = Header(
 
 
 @app.delete("/api/{team}")
-async def delete_teamspace(team: str, token: str = Header(None)):
+async def delete_teamspace(team: str,
+                           token: str = Header(None)):
     if (invalid_token(token)):
         return JSONResponse(content="Unauthorized", status_code=401)
 
