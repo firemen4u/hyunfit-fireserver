@@ -105,13 +105,31 @@ async def upload_file(
                          }, status_code=201)
 
 
+@app.get("/api/{team}/model", tags=["teachable model"])
+async def get_teachable_models(
+    team: str
+):
+    directory = f"models/{team}"
+    if not os.path.exists(directory):
+        return JSONResponse(content={
+            "result": "failed",
+            "message": "Teamspace가 없습니다.",
+            "team": team
+        }, status_code=404)
+    folders = os.scandir(directory)
+
+    return JSONResponse(content={
+        "models": [f.name for f in folders]
+    }, status_code=200)
+
+
 @app.post("/api/{team}/model", tags=["teachable model"])
 async def upload_teachable_model(
         team: str,
         file: UploadFile,
         modelname: Optional[str] = None,
         overwrite: bool = True
-        # token: str = Header(None)
+        # token:`` str = Header(None)
 ):
     """
     모델 업로드 API. zip 파일 확장자만 가능
@@ -140,7 +158,7 @@ async def upload_teachable_model(
 
     if modelname is None:
         modelname = get_filename(file)
-    directory = f"files/{team}/{modelname}"
+    directory = f"models/{team}/{modelname}"
 
     message = "파일을 성공적으로 업로드하였습니다."
     if os.path.isdir(directory):
@@ -166,7 +184,7 @@ async def upload_teachable_model(
 
 @app.get("/api/{team}/model/{modelname}/{filename}", response_class=FileResponse, tags=["teachable model"])
 async def download_model(team: str, modelname: str, filename: str):
-    file_path = f"files/{team}/{modelname}/{filename}"
+    file_path = f"models/{team}/{modelname}/{filename}"
     if not os.path.isfile(file_path):
         return JSONResponse({"result": "failed",
                              "message": "파일이 존재하지 않습니다.",
@@ -194,12 +212,12 @@ async def download_file(team: str, filename: str):
 
 @app.delete("/api/{team}/model/{modelname}", tags=["teachable model"])
 async def delete_teachable_model(team: str, modelname: str,
-                                 token: str = Header(None)
+                                 #  token: str = Header(None)
                                  ):
-    if (invalid_token(token)):
-        return JSONResponse(content="Unauthorized", status_code=401)
+    # if (invalid_token(token)):
+    #     return JSONResponse(content="Unauthorized", status_code=401)
 
-    path = f"files/{team}/{modelname}"
+    path = f"models/{team}/{modelname}"
 
     if not os.path.exists(path):
         return JSONResponse({"result": "failed",
@@ -217,9 +235,10 @@ async def delete_teachable_model(team: str, modelname: str,
 
 @app.delete("/api/{team}")
 async def delete_teamspace(team: str,
-                           token: str = Header(None)):
-    if (invalid_token(token)):
-        return JSONResponse(content="Unauthorized", status_code=401)
+                           #    token: str = Header(None)
+                           ):
+    # if (invalid_token(token)):
+    #     return JSONResponse(content="Unauthorized", status_code=401)
 
     path = f"files/{team}"
 
