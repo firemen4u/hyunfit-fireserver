@@ -74,6 +74,23 @@ async def security_middleware(request: Request, call_next):
                              }, status_code=500)
 
 
+@app.get("/api/{team}/file")
+async def get_files(
+    team: str
+):
+    directory = f"storage/files/{team}"
+    if not os.path.exists(directory):
+        return JSONResponse(content={
+            "result": "failed",
+            "message": "Teamspace가 없습니다.",
+            "team": team
+        }, status_code=404)
+    folders = os.scandir(directory)
+    return JSONResponse(content={
+        "files": [f.name for f in folders]
+    }, status_code=200)
+
+
 @app.post("/api/{team}/file")
 async def upload_file(
         team: str,
