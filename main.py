@@ -84,7 +84,7 @@ async def upload_file(
     # if (invalid_token(token)):
     #     return JSONResponse(content="Unauthorized", status_code=401)
 
-    file_path = f"files/{team}/{file.filename}"
+    file_path = f"storage/files/{team}/{file.filename}"
     message = "파일을 성공적으로 업로드하였습니다."
     if os.path.isfile(file_path):
         if not overwrite:
@@ -94,7 +94,7 @@ async def upload_file(
             }, status_code=406)
         message = "기존 파일을 성공적으로 덮어씌웠습니다."
 
-    create_directory(f"files/{team}")
+    create_directory(f"storage/files/{team}")
 
     with open(file_path, "wb") as f:
         f.write(file.file.read())
@@ -109,7 +109,7 @@ async def upload_file(
 async def get_teachable_models(
     team: str
 ):
-    directory = f"models/{team}"
+    directory = f"storage/models/{team}"
     if not os.path.exists(directory):
         return JSONResponse(content={
             "result": "failed",
@@ -158,7 +158,7 @@ async def upload_teachable_model(
 
     if modelname is None:
         modelname = get_filename(file)
-    directory = f"models/{team}/{modelname}"
+    directory = f"storage/models/{team}/{modelname}"
 
     message = "파일을 성공적으로 업로드하였습니다."
     if os.path.isdir(directory):
@@ -184,7 +184,7 @@ async def upload_teachable_model(
 
 @app.get("/api/{team}/model/{modelname}/{filename}", response_class=FileResponse, tags=["teachable model"])
 async def download_model(team: str, modelname: str, filename: str):
-    file_path = f"models/{team}/{modelname}/{filename}"
+    file_path = f"storage/models/{team}/{modelname}/{filename}"
     if not os.path.isfile(file_path):
         return JSONResponse({"result": "failed",
                              "message": "파일이 존재하지 않습니다.",
@@ -195,7 +195,7 @@ async def download_model(team: str, modelname: str, filename: str):
 
 @app.get("/api/{team}/file/{filename}", response_class=FileResponse)
 async def download_file(team: str, filename: str):
-    file_path = f"files/{team}/{filename}"
+    file_path = f"storage/files/{team}/{filename}"
     if not os.path.isfile(file_path):
         return JSONResponse({"result": "failed",
                              "message": "파일이 존재하지 않습니다."
@@ -217,19 +217,19 @@ async def delete_teachable_model(team: str, modelname: str,
     # if (invalid_token(token)):
     #     return JSONResponse(content="Unauthorized", status_code=401)
 
-    path = f"models/{team}/{modelname}"
+    path = f"storage/models/{team}/{modelname}"
 
     if not os.path.exists(path):
         return JSONResponse({"result": "failed",
                              "message": "폴더가 존재하지 않습니다.",
-                             "filename": f"{path}"
+                             "filename": path
                              }, status_code=404)
 
     delete_directory(path)
 
     return JSONResponse({"result": "successful",
                          "message": "폴더가 성공적으로 삭제되었습니다.",
-                         "filename": f"{path}"
+                         "filename": path
                          }, status_code=200)
 
 
@@ -240,19 +240,19 @@ async def delete_teamspace(team: str,
     # if (invalid_token(token)):
     #     return JSONResponse(content="Unauthorized", status_code=401)
 
-    path = f"files/{team}"
+    path = f"storage/files/{team}"
 
     if not os.path.exists(path):
         return JSONResponse({"result": "failed",
                              "message": "폴더가 존재하지 않습니다.",
-                             "filename": f"{path}"
+                             "filename": path
                              }, status_code=404)
 
     delete_directory(path)
 
     return JSONResponse({"result": "successful",
                          "message": "팀스페이스가 성공적으로 삭제되었습니다.",
-                         "filename": f"{path}"
+                         "filename": path
                          }, status_code=200)
 
 
